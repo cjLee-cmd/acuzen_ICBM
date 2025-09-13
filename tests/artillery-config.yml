@@ -1,0 +1,193 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    # 워밍업 단계 - 점진적 부하 증가
+    - duration: 60  # 1분
+      arrivalRate: 1  # 초당 1명
+      name: "Warm-up phase"
+    
+    # 일반 부하 단계 - 정상 트래픽 시뮬레이션
+    - duration: 300  # 5분
+      arrivalRate: 5   # 초당 5명
+      name: "Normal load phase"
+    
+    # 높은 부하 단계 - 피크 시간 시뮬레이션
+    - duration: 180  # 3분
+      arrivalRate: 10  # 초당 10명
+      name: "High load phase"
+    
+    # 스파이크 테스트 - 급격한 트래픽 증가
+    - duration: 60   # 1분
+      arrivalRate: 20  # 초당 20명
+      name: "Spike test phase"
+
+  # 성능 목표 설정
+  ensure:
+    # 평균 응답 시간 500ms 이하
+    - response.time.p95: 500
+    # 에러율 5% 이하
+    - response.status.2xx: 95
+    # 성공률 95% 이상
+    - response.time.median: 200
+
+  # HTTP 설정
+  http:
+    timeout: 10
+    pool: 10  # 연결 풀 크기
+
+  # 플러그인 설정
+  plugins:
+    metrics-by-endpoint: {}
+    publish-metrics:
+      - type: datadog
+        tags:
+          - "service:korean-drug-surveillance"
+          - "environment:performance-test"
+
+scenarios:
+  # 시나리오 1: 대시보드 조회 (가장 빈번한 사용 패턴)
+  - name: "Dashboard browsing"
+    weight: 40  # 전체 트래픽의 40%
+    flow:
+      - get:
+          url: "/api/dashboard/stats"
+          expect:
+            - statusCode: 200
+            - contentType: "application/json"
+      - get:
+          url: "/api/dashboard/recent-cases"
+          expect:
+            - statusCode: 200
+      - think: 2  # 2초 대기 (사용자 행동 시뮬레이션)
+
+  # 시나리오 2: 사례 관리 (검색 및 조회)
+  - name: "Case management"
+    weight: 30  # 전체 트래픽의 30%
+    flow:
+      - get:
+          url: "/api/cases"
+          qs:
+            page: 1
+            limit: 20
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/cases/critical"
+          expect:
+            - statusCode: 200
+      - think: 3
+      # 특정 사례 상세 조회 (실제 ID 사용)
+      - get:
+          url: "/api/cases/{{ $randomString() }}"
+          expect:
+            - statusCode: [200, 404]  # 존재하지 않는 ID일 경우 404 허용
+      - think: 5
+
+  # 시나리오 3: ICSR 보고서 제출 (가장 중요한 기능)
+  - name: "ICSR report submission"
+    weight: 20  # 전체 트래픽의 20%
+    flow:
+      - post:
+          url: "/api/reports"
+          json:
+            reportType: "spontaneous"
+            reporterType: "healthcare_professional"
+            reporterName: "성능테스트의사{{ $randomInt(1, 1000) }}"
+            reporterOrganization: "성능테스트병원{{ $randomInt(1, 100) }}"
+            patientAge: "{{ $randomInt(18, 80) }}"
+            patientGender: "{{ $pick(['Male', 'Female', 'Unknown']) }}"
+            drugName: "테스트약물{{ $randomInt(1, 50) }}"
+            drugDosage: "1일 {{ $randomInt(1, 3) }}회"
+            adverseReaction: "{{ $pick(['두드러기', '오심', '어지럼', '발열', '피로감']) }}"
+            reactionDescription: "성능 테스트용 부작용 설명"
+            severity: "{{ $pick(['Low', 'Medium', 'High']) }}"
+            seriousness: "{{ $pick(['serious', 'non_serious']) }}"
+            outcome: "{{ $pick(['recovered', 'recovering', 'not_recovered', 'unknown']) }}"
+          expect:
+            - statusCode: [200, 201]
+            - hasProperty: "id"
+      - think: 10  # 제출 후 대기
+
+  # 시나리오 4: 사용자 관리 (관리자 기능)
+  - name: "Admin operations"
+    weight: 10  # 전체 트래픽의 10%
+    flow:
+      - get:
+          url: "/api/users"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/audit-logs"
+          qs:
+            limit: 50
+          expect:
+            - statusCode: 200
+      - think: 5
+
+  # 시나리오 5: AI 분석 요청 (높은 리소스 사용)
+  - name: "AI analysis"
+    weight: 5  # 전체 트래픽의 5% (리소스 집약적)
+    flow:
+      - post:
+          url: "/api/ai/analyze"
+          json:
+            caseId: "test-case-{{ $randomString() }}"
+            analysisType: "severity_assessment"
+            priority: "normal"
+          expect:
+            - statusCode: [200, 202]  # 비동기 처리 가능
+          capture:
+            - json: "$.analysisId"
+              as: "analysisId"
+      - think: 15  # AI 분석 대기 시간
+
+# 개별 API 엔드포인트 테스트
+individual_tests:
+  # 통계 API 성능 테스트
+  stats_api:
+    target: "http://localhost:3000"
+    phases:
+      - duration: 120
+        arrivalRate: 15
+    scenarios:
+      - flow:
+          - get:
+              url: "/api/dashboard/stats"
+
+  # 사례 조회 API 성능 테스트
+  cases_api:
+    target: "http://localhost:3000"
+    phases:
+      - duration: 120
+        arrivalRate: 20
+    scenarios:
+      - flow:
+          - get:
+              url: "/api/cases"
+              qs:
+                limit: 50
+
+  # 보고서 제출 API 성능 테스트
+  submit_api:
+    target: "http://localhost:3000"
+    phases:
+      - duration: 60
+        arrivalRate: 5  # 보고서 제출은 상대적으로 빈도가 낮음
+    scenarios:
+      - flow:
+          - post:
+              url: "/api/reports"
+              json:
+                reportType: "spontaneous"
+                reporterType: "healthcare_professional"
+                reporterName: "부하테스트의사"
+                reporterOrganization: "부하테스트병원"
+                patientAge: 45
+                patientGender: "Male"
+                drugName: "부하테스트약물"
+                drugDosage: "1일 2회"
+                adverseReaction: "부하테스트반응"
+                reactionDescription: "부하 테스트를 위한 설명"
+                severity: "Medium"
+                seriousness: "non_serious"
+                outcome: "unknown"

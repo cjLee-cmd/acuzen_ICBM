@@ -1,1 +1,1 @@
-✅ 데이터 입력 기능 라우팅 문제 해결 완료 - catch-all 라우트 제거로 POST /api/reports 엔드포인트 정상 접근 가능
+📊 전체 소프트웨어 성능 테스트 체크리스트 및 자동화 스크립트 완성 - Playwright E2E 성능 테스트, Artillery API 부하 테스트, 성능 측정 도구 통합
