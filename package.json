@@ -1,0 +1,89 @@
+{
+  "name": "acuzen-icbm",
+  "version": "2.0.0",
+  "description": "Acuzen ICBM - Second Project: Advanced development project building on our foundation",
+  "main": "src/core/index.js",
+  "scripts": {
+    "start": "node src/core/index.js",
+    "dev": "nodemon src/core/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "build": "npm run lint && npm run test",
+    "docs": "jsdoc -c jsdoc.conf.json",
+    "clean": "rm -rf node_modules dist coverage"
+  },
+  "keywords": [
+    "acuzen",
+    "icbm",
+    "javascript",
+    "nodejs",
+    "api",
+    "korean-project"
+  ],
+  "author": "cjLee-cmd <cjLee-cmd@github.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cjLee-cmd/acuzen_ICBM.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cjLee-cmd/acuzen_ICBM/issues"
+  },
+  "homepage": "https://github.com/cjLee-cmd/acuzen_ICBM#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^6.1.5",
+    "dotenv": "^16.0.3",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "joi": "^17.9.2",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "eslint": "^8.41.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "jsdoc": "^4.0.2",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "html",
+      "lcov"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "standard",
+    "env": {
+      "node": true,
+      "es6": true,
+      "jest": true
+    },
+    "rules": {
+      "no-console": "off",
+      "prefer-const": "error",
+      "no-unused-vars": "error"
+    }
+  }
+}
