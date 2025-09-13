@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Search, 
   Plus, 
@@ -38,35 +39,64 @@ export function CaseManagement() {
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Mock data - todo: remove mock functionality
-  const cases: Case[] = [
-    {
-      id: "CSE-2024-001",
-      patientAge: 45,
-      gender: "Female",
-      drug: "Aspirin 100mg",
-      reaction: "Gastrointestinal bleeding",
-      severity: "High",
-      status: "검토 필요",
-      reporter: "Dr. Kim",
-      dateReported: "2024-01-15",
-      aiConfidence: 92,
-      aiRecommendation: "Immediate review recommended due to severity"
-    },
-    {
-      id: "CSE-2024-002",
-      patientAge: 32,
-      gender: "Male",
-      drug: "Ibuprofen 400mg",
-      reaction: "Skin rash",
-      severity: "Medium",
-      status: "처리중",
-      reporter: "Dr. Lee",
-      dateReported: "2024-01-14",
-      aiConfidence: 87,
-      aiRecommendation: "Standard monitoring required"
-    }
-  ];
+  // Use TanStack Query to fetch cases data (with demo fallback for static hosting)
+  const { data: cases = [], isLoading, error } = useQuery<Case[]>({
+    queryKey: ["/api", "cases"],
+    staleTime: 30000, // 30 seconds cache
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">사례 관리</h1>
+            <p className="text-muted-foreground">부작용 사례 관리 및 처리</p>
+          </div>
+          <Button disabled>
+            <Plus className="mr-2 h-4 w-4" />
+            새 사례 등록
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+                <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted animate-pulse rounded" />
+                  <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">사례 관리</h1>
+          <p className="text-muted-foreground">부작용 사례 관리 및 처리</p>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-lg font-semibold mb-2">데이터를 불러올 수 없습니다</h2>
+              <p className="text-muted-foreground">네트워크 연결을 확인하고 다시 시도해주세요.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const filteredCases = cases.filter(case_ => {
     const matchesSearch = case_.drug.toLowerCase().includes(searchTerm.toLowerCase()) ||
