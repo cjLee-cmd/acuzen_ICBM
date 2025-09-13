@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5010';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
 
 // 간단한 데이터 입력 페이지 스모크 테스트
 // - 사이드바에서 '데이터 입력' 메뉴로 이동 가능
