@@ -141,10 +141,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCase(case_: InsertCase): Promise<Case> {
-    // Generate case number with timestamp for uniqueness
+    // Generate case number with timestamp + random for better uniqueness
     const timestamp = Date.now();
     const year = new Date().getFullYear();
-    const caseNumber = `CSE-${year}-${timestamp.toString().slice(-6)}`;
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const caseNumber = `CSE-${year}-${timestamp.toString().slice(-6)}${random}`;
     const id = this.generateId();
     const now = new Date();
     
