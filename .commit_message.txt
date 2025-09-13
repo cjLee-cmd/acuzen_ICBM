@@ -1,1 +1,1 @@
-🔧 GitHub Pages 404 에러 수정 - Jekyll 워크플로우 제거 및 asset 경로 수정
+🌿 dev 분기 생성 - 개발 작업용 브랜치 추가
