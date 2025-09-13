@@ -12,5 +12,6 @@ vite.config.ts.*
 # Playwright artifacts / Pages outputs
 test-results/
 playwright-report/
+playwright-screenshots/
 *.png
 dist/public
