@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,6 +18,16 @@ import { AuditLogs } from "@/components/AuditLogs";
 import { SystemMonitoring } from "@/components/SystemMonitoring";
 import { Settings } from "@/components/Settings";
 import NotFound from "@/pages/not-found";
+
+// Configure base path for GitHub Pages - use runtime detection
+const getBasePath = () => {
+  if (typeof window === 'undefined') return '';
+  
+  const isGitHubPages = window.location.hostname.includes('.github.io');
+  const hasRepoPath = window.location.pathname.includes('/acuzen_ICBM/');
+  
+  return (isGitHubPages || hasRepoPath) ? '/acuzen_ICBM' : '';
+};
 
 function Router({ userRole }: { userRole: string }) {
   return (
@@ -47,31 +57,35 @@ function App() {
     "--sidebar-width-icon": "4rem",   // default icon width
   };
 
+  const basePath = getBasePath();
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
           <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar userRole="ADMIN" />
-              <div className="flex flex-col flex-1">
-                <header className="flex items-center justify-between p-4 border-b bg-background">
-                  <div className="flex items-center gap-4">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <div className="text-sm text-muted-foreground">
-                      약물감시 시스템 관리자
+            {/* Wrap with WouterRouter with basePath for GitHub Pages support */}
+            <WouterRouter base={basePath}>
+              <div className="flex h-screen w-full">
+                <AppSidebar userRole="ADMIN" />
+                <div className="flex flex-col flex-1">
+                  <header className="flex items-center justify-between p-4 border-b bg-background">
+                    <div className="flex items-center gap-4">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" />
+                      <div className="text-sm text-muted-foreground">
+                        약물감시 시스템 관리자
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                  </div>
-                </header>
-                <main className="flex-1 overflow-auto p-6">
-                  <Router userRole="ADMIN" />
-                </main>
+                    <div className="flex items-center gap-2">
+                      <ThemeToggle />
+                    </div>
+                  </header>
+                  <main className="flex-1 overflow-auto p-6">
+                    <Router userRole="ADMIN" />
+                  </main>
+                </div>
               </div>
-            </div>
+            </WouterRouter>
           </SidebarProvider>
           <Toaster />
         </TooltipProvider>

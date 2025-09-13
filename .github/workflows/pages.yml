@@ -36,9 +36,28 @@ jobs:
         run: |
           npm run build
       
-      - name: Add SPA 404 fallback
+      - name: Add SPA routing support for GitHub Pages
         run: |
+          # Copy the main index.html to 404.html for SPA fallback
           cp dist/public/index.html dist/public/404.html
+          
+          # Create additional SPA route files to help with direct access
+          mkdir -p dist/public/cases
+          mkdir -p dist/public/critical-cases
+          mkdir -p dist/public/users
+          mkdir -p dist/public/ai-models
+          mkdir -p dist/public/audit-logs
+          mkdir -p dist/public/monitoring
+          mkdir -p dist/public/settings
+          
+          # Copy index.html to each route directory for better compatibility
+          cp dist/public/index.html dist/public/cases/index.html
+          cp dist/public/index.html dist/public/critical-cases/index.html
+          cp dist/public/index.html dist/public/users/index.html
+          cp dist/public/index.html dist/public/ai-models/index.html
+          cp dist/public/index.html dist/public/audit-logs/index.html
+          cp dist/public/index.html dist/public/monitoring/index.html
+          cp dist/public/index.html dist/public/settings/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
