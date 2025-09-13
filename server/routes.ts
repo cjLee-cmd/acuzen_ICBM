@@ -85,6 +85,19 @@ const auditLog = (action: string, resource: string) => {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // 디버깅용 미들웨어 - 모든 POST 요청 로깅
+  app.use((req, res, next) => {
+    if (req.method === 'POST') {
+      console.log(`=== POST Request Debug ===`);
+      console.log(`URL: ${req.url}`);
+      console.log(`Path: ${req.path}`);
+      console.log(`Headers:`, req.headers);
+      console.log(`Body:`, req.body);
+      console.log(`========================`);
+    }
+    next();
+  });
+  
   // Rate limiting for login attempts
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

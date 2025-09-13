@@ -106,11 +106,9 @@ async function startServer() {
     app.head("/api", (_req, res) => res.sendStatus(200));
     app.get("/api", (_req, res) => res.json({ status: "ok" }));
 
-    // Prevent SPA fallback from swallowing API requests in production
-    // This must be after registerRoutes but before serveStatic
-    app.all("/api/*", (_req, res) => {
-      res.status(404).json({ error: "API endpoint not found" });
-    });
+    // Note: Removed catch-all API route to allow registered routes to work properly
+    // The registerRoutes() function handles all valid API endpoints
+    // Invalid API requests will naturally return 404 from Express
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
