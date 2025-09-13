@@ -75,8 +75,8 @@ const auditLog = (action: string, resource: string) => {
     };
     
     next();
-  };
-};
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
