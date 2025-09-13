@@ -19,6 +19,7 @@ import {
 import { db } from "./db";
 import { eq, and, desc, count } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { randomBytes } from "crypto";
 
 export interface IStorage {
   // User methods
@@ -59,6 +60,11 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Helper method to generate IDs
+  private generateId(): string {
+    return randomBytes(16).toString('hex');
+  }
+
   // User methods
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -72,9 +78,17 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(user: InsertUser): Promise<User> {
     const hashedPassword = await this.hashPassword(user.password);
+    const id = this.generateId();
+    const now = new Date();
     const [newUser] = await db
       .insert(users)
-      .values({ ...user, password: hashedPassword })
+      .values({ 
+        ...user, 
+        id,
+        password: hashedPassword,
+        createdAt: now,
+        updatedAt: now
+      })
       .returning();
     return newUser;
   }
@@ -131,10 +145,19 @@ export class DatabaseStorage implements IStorage {
     const timestamp = Date.now();
     const year = new Date().getFullYear();
     const caseNumber = `CSE-${year}-${timestamp.toString().slice(-6)}`;
+    const id = this.generateId();
+    const now = new Date();
     
     const [newCase] = await db
       .insert(cases)
-      .values({ ...case_, caseNumber })
+      .values({ 
+        ...case_, 
+        id,
+        caseNumber,
+        dateReported: now,
+        createdAt: now,
+        updatedAt: now
+      })
       .returning();
     return newCase;
   }
@@ -180,9 +203,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAiPrediction(prediction: InsertAiPrediction): Promise<AiPrediction> {
+    const id = this.generateId();
+    const now = new Date();
     const [newPrediction] = await db
       .insert(aiPredictions)
-      .values(prediction)
+      .values({ ...prediction, id, createdAt: now })
       .returning();
     return newPrediction;
   }
@@ -204,9 +229,11 @@ export class DatabaseStorage implements IStorage {
 
   // Audit Log methods
   async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const id = this.generateId();
+    const now = new Date();
     const [newLog] = await db
       .insert(auditLogs)
-      .values(log)
+      .values({ ...log, id, timestamp: now })
       .returning();
     return newLog;
   }
@@ -232,9 +259,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAiModel(model: InsertAiModel): Promise<AiModel> {
+    const id = this.generateId();
+    const now = new Date();
     const [newModel] = await db
       .insert(aiModels)
-      .values(model)
+      .values({ ...model, id, createdAt: now, lastUpdated: now })
       .returning();
     return newModel;
   }

@@ -11,7 +11,7 @@ import { z } from "zod";
 
 // Users table
 export const users = sqliteTable("users", {
-  id: text("id").primaryKey().default(sql`(lower(hex(randomblob(16))))`),
+  id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   password: text("password").notNull(),
@@ -19,13 +19,13 @@ export const users = sqliteTable("users", {
   organization: text("organization"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   lastLoginAt: integer("last_login_at", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 // Cases table for adverse drug reactions
 export const cases = sqliteTable("cases", {
-  id: text("id").primaryKey().default(sql`(lower(hex(randomblob(16))))`),
+  id: text("id").primaryKey(),
   caseNumber: text("case_number").notNull().unique(),
   patientAge: integer("patient_age").notNull(),
   patientGender: text("patient_gender").notNull(),
@@ -36,7 +36,7 @@ export const cases = sqliteTable("cases", {
   severity: text("severity").notNull(), // Low, Medium, High, Critical
   status: text("status").notNull().default("검토 필요"), // 긴급, 검토 필요, 처리중, 완료
   reporterId: text("reporter_id").notNull().references(() => users.id),
-  dateReported: integer("date_reported", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  dateReported: integer("date_reported", { mode: "timestamp" }).notNull(),
   dateOfReaction: integer("date_of_reaction", { mode: "timestamp" }),
   concomitantMeds: text("concomitant_meds"), // JSON as text
   medicalHistory: text("medical_history"),
@@ -46,13 +46,13 @@ export const cases = sqliteTable("cases", {
   deletedAt: integer("deleted_at", { mode: "timestamp" }),
   deletedBy: text("deleted_by").references(() => users.id),
   deletionReason: text("deletion_reason"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 // AI predictions table
 export const aiPredictions = sqliteTable("ai_predictions", {
-  id: text("id").primaryKey().default(sql`(lower(hex(randomblob(16))))`),
+  id: text("id").primaryKey(),
   caseId: text("case_id").notNull().references(() => cases.id),
   modelName: text("model_name").notNull(),
   modelVersion: text("model_version").notNull(),
@@ -63,12 +63,12 @@ export const aiPredictions = sqliteTable("ai_predictions", {
   humanReviewed: integer("human_reviewed", { mode: "boolean" }).notNull().default(false),
   reviewerId: text("reviewer_id").references(() => users.id),
   reviewNotes: text("review_notes"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
 // Audit logs table
 export const auditLogs = sqliteTable("audit_logs", {
-  id: text("id").primaryKey().default(sql`(lower(hex(randomblob(16))))`),
+  id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id),
   action: text("action").notNull(),
   resource: text("resource").notNull(),
@@ -77,20 +77,20 @@ export const auditLogs = sqliteTable("audit_logs", {
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   severity: text("severity").notNull().default("INFO"), // INFO, WARNING, HIGH
-  timestamp: integer("timestamp", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
 });
 
 // AI models table
 export const aiModels = sqliteTable("ai_models", {
-  id: text("id").primaryKey().default(sql`(lower(hex(randomblob(16))))`),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   version: text("version").notNull(),
   status: text("status").notNull().default("Active"),
   accuracy: real("accuracy"),
   avgResponseTime: integer("avg_response_time"),
   totalPredictions: integer("total_predictions").notNull().default(0),
-  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  lastUpdated: integer("last_updated", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
 // Relations
