@@ -448,6 +448,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ICSR 표준 보고서 제출 (전용 엔드포인트)
+  app.post("/api/reports", requireAuth, auditLog("SUBMIT_ICSR_REPORT", "cases"), async (req: Request, res: Response) => {
+    try {
+      const reportData = req.body;
+      
+      // ICSR 데이터를 기존 스키마에 맞게 변환
+      const caseData = {
+        patientAge: reportData.patientAge,
+        patientGender: reportData.patientGender,
+        drugName: reportData.drugName,
+        drugDosage: reportData.drugDosage,
+        adverseReaction: reportData.adverseReaction,
+        reactionDescription: reportData.reactionDescription,
+        severity: reportData.severity,
+        status: "검토 필요", // 새 보고서는 기본적으로 검토 필요 상태
+        reporterId: req.user!.id,
+        dateOfReaction: reportData.reactionStartDate ? new Date(reportData.reactionStartDate) : undefined,
+        medicalHistory: reportData.patientMedicalHistory,
+        outcome: reportData.outcome,
+        concomitantMeds: reportData.concomitantMeds ? JSON.stringify(reportData.concomitantMeds) : undefined
+      };
+
+      // 기존 스키마 검증
+      const result = insertCaseSchema.safeParse(caseData);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "보고서 데이터 검증 실패", 
+          details: fromZodError(result.error).toString() 
+        });
+      }
+      
+      // 케이스 생성
+      const case_ = await storage.createCase(result.data);
+      
+      // ICSR 확장 데이터를 감사 로그에 기록 (규정 준수)
+      await storage.createAuditLog({
+        userId: req.user!.id,
+        action: "SUBMIT_ICSR_EXTENDED_DATA",
+        resource: "cases",
+        resourceId: case_.id,
+        details: JSON.stringify({
+          reportType: reportData.reportType,
+          reporterType: reportData.reporterType,
+          reporterName: reportData.reporterName,
+          reporterQualification: reportData.reporterQualification,
+          reporterOrganization: reportData.reporterOrganization,
+          reporterContact: reportData.reporterContact,
+          drugRoute: reportData.drugRoute,
+          drugIndication: reportData.drugIndication,
+          drugManufacturer: reportData.drugManufacturer,
+          drugBatchNumber: reportData.drugBatchNumber,
+          patientWeight: reportData.patientWeight,
+          patientHeight: reportData.patientHeight,
+          seriousness: reportData.seriousness,
+          rechallenge: reportData.rechallenge,
+          dechallenge: reportData.dechallenge,
+          causality: reportData.causality,
+          additionalInfo: reportData.additionalInfo,
+          literatureReferences: reportData.literatureReferences
+        }),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        severity: reportData.seriousness === "serious" ? "HIGH" : "INFO"
+      });
+      
+      res.status(201).json({
+        success: true,
+        caseId: case_.id,
+        caseNumber: case_.caseNumber,
+        message: "ICSR 보고서가 성공적으로 제출되었습니다.",
+        submittedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("ICSR report submission error:", error);
+      res.status(500).json({ error: "보고서 제출 중 오류가 발생했습니다." });
+    }
+  });
+
   app.post("/api/cases", requireAuth, auditLog("CREATE_CASE", "cases"), async (req: Request, res: Response) => {
     try {
       const result = insertCaseSchema.safeParse({
