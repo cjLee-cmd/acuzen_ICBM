@@ -81,8 +81,8 @@ export function CaseManagement() {
   };
 
   const handleCreateCase = () => {
-    setIsCreateDialogOpen(true);
-    console.log('Create new case triggered');
+    // Navigate to structured report entry page
+    setLocation('/report');
   };
 
   const handleProcessCase = (caseId: string) => {
@@ -239,7 +239,7 @@ export function CaseManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>환자 정보</Label>
-                  <p className="text-sm mt-1">{selectedCase.patientAge}세 {selectedCase.gender}</p>
+                  <p className="text-sm mt-1">{selectedCase.patientAge}세 {selectedCase.patientGender}</p>
                 </div>
                 <div>
                   <Label>중증도</Label>
@@ -250,62 +250,18 @@ export function CaseManagement() {
               </div>
               <div>
                 <Label>약물</Label>
-                <p className="text-sm mt-1">{selectedCase.drug}</p>
+                <p className="text-sm mt-1">{selectedCase.drugName}</p>
               </div>
               <div>
                 <Label>부작용 반응</Label>
-                <p className="text-sm mt-1">{selectedCase.reaction}</p>
+                <p className="text-sm mt-1">{selectedCase.adverseReaction}</p>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Create Case Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-create-case">
-          <DialogHeader>
-            <DialogTitle>새 사례 등록</DialogTitle>
-            <DialogDescription>새로운 부작용 사례를 등록합니다</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="patient-age">환자 나이</Label>
-                <Input id="patient-age" placeholder="나이" data-testid="input-patient-age" />
-              </div>
-              <div>
-                <Label htmlFor="patient-gender">성별</Label>
-                <Select>
-                  <SelectTrigger data-testid="select-patient-gender">
-                    <SelectValue placeholder="성별 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">남성</SelectItem>
-                    <SelectItem value="Female">여성</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="drug-name">약물명</Label>
-              <Input id="drug-name" placeholder="약물명 및 용량" data-testid="input-drug-name" />
-            </div>
-            <div>
-              <Label htmlFor="reaction">부작용 반응</Label>
-              <Textarea id="reaction" placeholder="부작용 상세 설명" data-testid="textarea-reaction" />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} data-testid="button-cancel-create">
-                취소
-              </Button>
-              <Button onClick={() => { setIsCreateDialogOpen(false); console.log('Create case submitted'); }} data-testid="button-submit-create">
-                등록
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Create Case Dialog removed in favor of dedicated /report page */}
     </div>
   );
 }
