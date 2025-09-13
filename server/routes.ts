@@ -60,21 +60,6 @@ const auditLog = (action: string, resource: string) => {
   return async (req: Request, res: Response, next: any) => {
     // Completely disabled for debugging
     next();
-        // storage.createAuditLog({
-        //   userId: req.user.id,
-        //   action,
-        //   resource,
-        //   resourceId,
-        //   details: sanitizedDetails,
-        //   ipAddress: req.ip,
-        //   userAgent: req.get('User-Agent')
-        // }).catch(err => console.error('Audit log error:', err));
-      }
-      
-      return originalSend.call(this, body);
-    };
-    
-    next();
   };
 };
 
@@ -127,7 +112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           action: "LOGIN",
           resource: "auth",
           ipAddress: req.ip,
-          userAgent: req.get('User-Agent')
+          userAgent: req.get('User-Agent'),
+          severity: "INFO"
         });
         
         res.json({ 
@@ -152,7 +138,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       action: "LOGOUT",
       resource: "auth",
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get('User-Agent'),
+      severity: "INFO"
     });
     
     req.session!.destroy((err: any) => {
