@@ -38,6 +38,12 @@ const menuItems = [
     roles: ["USER", "REVIEWER", "ADMIN"]
   },
   {
+    title: "데이터 입력",
+    url: "/report",
+    icon: Database,
+    roles: ["USER", "REVIEWER", "ADMIN"]
+  },
+  {
     title: "AI 모델 관리",
     url: "/ai-models",
     icon: Brain,

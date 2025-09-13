@@ -360,6 +360,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const casePredictions = predictions.filter(p => p.caseId === case_.id);
         const latestPrediction = casePredictions.length > 0 ? 
           casePredictions[casePredictions.length - 1] : null;
+        // Parse prediction JSON safely
+        const parsedPrediction: any | null = latestPrediction ? (() => {
+          try {
+            const raw = (latestPrediction as any).prediction;
+            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+          } catch {
+            return null;
+          }
+        })() : null;
 
         return {
           id: case_.id, // Use actual database UUID for navigation
@@ -371,9 +380,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           outcome: case_.outcome || '진행 중',
           reporterType: '의료진', // This field doesn't exist in schema, using default
           aiPrediction: latestPrediction ? {
-            severity: latestPrediction.prediction && typeof latestPrediction.prediction === 'object' && 
-                     'severity' in latestPrediction.prediction ? latestPrediction.prediction.severity : case_.severity,
-            confidence: Math.round(parseFloat(latestPrediction.confidence) * 100)
+            severity: parsedPrediction && parsedPrediction.severity 
+              ? (typeof parsedPrediction.severity === 'string' 
+                  ? parsedPrediction.severity 
+                  : parsedPrediction.severity.severity || case_.severity)
+              : case_.severity,
+            confidence: Math.round(((latestPrediction as any).confidence ?? 0) * 100)
           } : null,
           createdAt: case_.dateReported,
           daysSinceReport
@@ -592,14 +604,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "UPDATE_CASE",
         resource: "cases",
         resourceId: id,
-        details: {
+        details: JSON.stringify({
           ...auditDetails,
           after: {
             status: case_.status,
             severity: case_.severity,
             outcome: case_.outcome
           }
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: "HIGH"
@@ -640,13 +652,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "SOFT_DELETE_CASE",
         resource: "cases",
         resourceId: id,
-        details: {
+        details: JSON.stringify({
           method: req.method,
           path: req.path,
           deletionReason: result.data.deletionReason,
           originalStatus: existingCase.status,
           originalSeverity: existingCase.severity
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: "HIGH"
@@ -670,7 +682,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get AI predictions for accuracy calculation
       const predictions = await storage.listAiPredictions();
       const aiAccuracy = predictions.length > 0 
-        ? Math.round(predictions.reduce((sum, p) => sum + parseFloat(p.confidence), 0) / predictions.length * 100)
+        ? Math.round(predictions.reduce((sum, p) => sum + ((p as any).confidence ?? 0), 0) / predictions.length * 100)
         : 0;
       
       const stats = {
@@ -708,7 +720,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             drug: case_.drugName,
             severity: case_.severity,
             status: case_.status,
-            aiConfidence: latestPrediction ? Math.round(parseFloat(latestPrediction.confidence) * 100) : null
+            aiConfidence: latestPrediction ? Math.round(((latestPrediction as any).confidence ?? 0) * 100) : null
           };
         });
 
@@ -784,7 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "AI_ANALYSIS",
         resource: "cases",
         resourceId: caseId,
-        details: {
+        details: JSON.stringify({
           method: req.method,
           path: req.path,
           modelName: predictionData.modelName,
@@ -793,7 +805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           processingTime: analysisResult.processingTime,
           previousSeverity: case_.severity,
           predictedSeverity: analysisResult.severity.severity
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: "INFO"
@@ -833,12 +845,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "READ_AI_PREDICTIONS",
         resource: "ai_predictions",
         resourceId: id,
-        details: {
+        details: JSON.stringify({
           method: req.method,
           path: req.path,
           caseId: id,
           predictionsCount: predictions.length
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: "INFO"
@@ -879,13 +891,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "REVIEW_AI_PREDICTION",
         resource: "ai_predictions",
         resourceId: id,
-        details: {
+        details: JSON.stringify({
           method: req.method,
           path: req.path,
           humanReviewed,
           reviewNotesLength: reviewNotes.length,
           caseId: updatedPrediction.caseId
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: "INFO"

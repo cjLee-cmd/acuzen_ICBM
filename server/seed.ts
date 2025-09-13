@@ -67,7 +67,7 @@ async function seedDatabase() {
           name: "Adverse Event Classifier",
           version: "1.0.0",
           status: "Active",
-          accuracy: "89.5",
+          accuracy: 89.5,
           avgResponseTime: 1200,
           totalPredictions: 0
         });

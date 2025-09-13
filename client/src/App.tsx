@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dashboard } from "@/components/Dashboard";
+import { AdverseEventReport } from "@/components/AdverseEventReport";
 import { CaseManagement } from "@/components/CaseManagement";
 import { CaseDetails } from "@/components/CaseDetails";
 import { CriticalCases } from "@/components/CriticalCases";
@@ -25,6 +26,7 @@ function Router({ userRole }: { userRole: string }) {
       <Route path="/" component={() => <Dashboard userRole={userRole} />} />
       <Route path="/cases" component={CaseManagement} />
       <Route path="/cases/:id" component={CaseDetails} />
+  <Route path="/report" component={AdverseEventReport} />
       <Route path="/critical-cases" component={CriticalCases} />
       <Route path="/users" component={UserManagement} />
       <Route path="/ai-models" component={AIModelManagement} />

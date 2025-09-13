@@ -173,3 +173,23 @@ export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
 // Log severity levels
 export const LOG_SEVERITY_LEVELS = ["INFO", "WARNING", "HIGH"] as const;
 export type LogSeverityLevel = (typeof LOG_SEVERITY_LEVELS)[number];
+
+// -----------------------------
+// Type aliases for application
+// -----------------------------
+export type User = typeof users.$inferSelect;
+export type InsertUser = Omit<typeof users.$inferInsert, 'id' | 'createdAt' | 'updatedAt'> & Partial<Pick<typeof users.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>>;
+
+export type Case = typeof cases.$inferSelect;
+export type InsertCase = Omit<typeof cases.$inferInsert, 'id' | 'caseNumber' | 'dateReported' | 'createdAt' | 'updatedAt'> & Partial<Pick<typeof cases.$inferInsert, 'id' | 'caseNumber' | 'dateReported' | 'createdAt' | 'updatedAt'>>;
+
+export type AiPrediction = typeof aiPredictions.$inferSelect;
+export type InsertAiPrediction = Omit<typeof aiPredictions.$inferInsert, 'id' | 'createdAt'> & Partial<Pick<typeof aiPredictions.$inferInsert, 'id' | 'createdAt'>>;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = Omit<typeof auditLogs.$inferInsert, 'id' | 'timestamp'> & Partial<Pick<typeof auditLogs.$inferInsert, 'id' | 'timestamp'>>;
+
+export type AiModel = typeof aiModels.$inferSelect;
+export type InsertAiModel = Omit<typeof aiModels.$inferInsert, 'id' | 'lastUpdated' | 'createdAt'> & Partial<Pick<typeof aiModels.$inferInsert, 'id' | 'lastUpdated' | 'createdAt'>>;
+
+export type SoftDeleteCase = z.infer<typeof softDeleteCaseSchema>;

@@ -106,8 +106,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    const result = await db.delete(users).where(eq(users.id, id));
-    return (result.rowCount ?? 0) > 0;
+  const result = await db.delete(users).where(eq(users.id, id));
+  // drizzle-orm with better-sqlite3 returns RunResult with 'changes'
+  // @ts-ignore - typing may not expose changes on return value
+  return (result as any)?.changes > 0;
   }
 
   async listUsers(filters?: { role?: string; isActive?: boolean }): Promise<User[]> {
@@ -187,8 +189,9 @@ export class DatabaseStorage implements IStorage {
   async deleteCase(id: string): Promise<boolean> {
     // Legacy hard delete method - kept for compatibility but deprecated
     // Use softDeleteCase for pharmacovigilance compliance
-    const result = await db.delete(cases).where(eq(cases.id, id));
-    return (result.rowCount ?? 0) > 0;
+  const result = await db.delete(cases).where(eq(cases.id, id));
+  // @ts-ignore
+  return (result as any)?.changes > 0;
   }
 
   async softDeleteCase(id: string, deletedBy: string, reason: string): Promise<Case | undefined> {
