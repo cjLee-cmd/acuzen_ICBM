@@ -60,21 +60,6 @@ const auditLog = (action: string, resource: string) => {
   return async (req: Request, res: Response, next: any) => {
     // Completely disabled for debugging
     next();
-        // storage.createAuditLog({
-        //   userId: req.user.id,
-        //   action,
-        //   resource,
-        //   resourceId,
-        //   details: sanitizedDetails,
-        //   ipAddress: req.ip,
-        //   userAgent: req.get('User-Agent')
-        // }).catch(err => console.error('Audit log error:', err));
-      }
-      
-      return originalSend.call(this, body);
-    };
-    
-    next();
   };
 };
 
