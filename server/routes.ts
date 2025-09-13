@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { randomUUID } from "crypto";
 import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { insertUserSchema, updateUserSchema, insertCaseSchema, updateCaseSchemaReviewer, updateCaseSchemaAdmin, insertAuditLogSchema, softDeleteCaseSchema } from "@shared/schema";
@@ -485,7 +486,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reportData = req.body;
       
       // ICSR 데이터를 기존 스키마에 맞게 변환
+      const now = new Date();
+      const caseId = randomUUID();
+      const caseNumber = `CASE-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      
       const caseData = {
+        id: caseId,
+        caseNumber: caseNumber,
         patientAge: reportData.patientAge,
         patientGender: reportData.patientGender,
         drugName: reportData.drugName,
@@ -495,21 +502,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         severity: reportData.severity,
         status: "검토 필요", // 새 보고서는 기본적으로 검토 필요 상태
         reporterId: req.user!.id,
+        dateReported: now,
         dateOfReaction: reportData.reactionStartDate ? new Date(reportData.reactionStartDate) : undefined,
         medicalHistory: reportData.patientMedicalHistory,
         outcome: reportData.outcome,
-        concomitantMeds: reportData.concomitantMeds ? JSON.stringify(reportData.concomitantMeds) : undefined
+        concomitantMeds: reportData.concomitantMeds ? JSON.stringify(reportData.concomitantMeds) : undefined,
+        createdAt: now,
+        updatedAt: now
       };
 
       // 기존 스키마 검증
+      console.log("=== SCHEMA VALIDATION DEBUG ===");
+      console.log("caseData:", JSON.stringify(caseData, null, 2));
+      
       const result = insertCaseSchema.safeParse(caseData);
       
       if (!result.success) {
+        console.log("=== SCHEMA VALIDATION FAILED ===");
+        console.log("Validation errors:", result.error.errors);
+        console.log("Formatted error:", fromZodError(result.error).toString());
+        
         return res.status(400).json({ 
           error: "보고서 데이터 검증 실패", 
           details: fromZodError(result.error).toString() 
         });
       }
+      
+      console.log("=== SCHEMA VALIDATION SUCCESS ===");
       
       // 케이스 생성
       const case_ = await storage.createCase(result.data);
