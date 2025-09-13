@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5010';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
 
 test('홈 대시보드 로드 및 타이틀 확인', async ({ page }) => {
   await page.goto(BASE_URL, { waitUntil: 'networkidle' });

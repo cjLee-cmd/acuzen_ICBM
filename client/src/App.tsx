@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AdverseEventReport } from "@/components/AdverseEventReport";
 import { Dashboard } from "@/components/Dashboard";
 import { CaseManagement } from "@/components/CaseManagement";
 import { CaseDetails } from "@/components/CaseDetails";
@@ -23,6 +24,7 @@ function Router({ userRole }: { userRole: string }) {
   return (
     <Switch>
       <Route path="/" component={() => <Dashboard userRole={userRole} />} />
+      <Route path="/report" component={AdverseEventReport} />
       <Route path="/cases" component={CaseManagement} />
       <Route path="/cases/:id" component={CaseDetails} />
       <Route path="/critical-cases" component={CriticalCases} />
