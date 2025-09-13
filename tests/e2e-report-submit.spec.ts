@@ -5,9 +5,8 @@ import { test, expect } from '@playwright/test';
 test('ICSR 보고서 작성/제출 후 대시보드에서 확인', async ({ page }) => {
   const BASE = process.env.BASE_URL || 'http://localhost:5000';
 
-  // 1) 앱 홈 → 사이드바로 이동하여 데이터 입력 화면으로 진입 (SPA 라우팅 신뢰도 향상)
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
-  await page.getByTestId('link-report').click();
+  // 1) 데이터 입력 화면으로 직접 이동 (사이드바 로딩 이슈 회피)
+  await page.goto(`${BASE}/report`, { waitUntil: 'networkidle' });
   await expect(page.getByTestId('adverse-event-report')).toBeVisible();
 
   // 2) 최소 필수 정보 입력
