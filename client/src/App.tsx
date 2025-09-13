@@ -17,6 +17,7 @@ import { AIModelManagement } from "@/components/AIModelManagement";
 import { AuditLogs } from "@/components/AuditLogs";
 import { SystemMonitoring } from "@/components/SystemMonitoring";
 import { Settings } from "@/components/Settings";
+import { AdverseEventReport } from "@/components/AdverseEventReport";
 import NotFound from "@/pages/not-found";
 
 function Router({ userRole }: { userRole: string }) {
@@ -25,6 +26,7 @@ function Router({ userRole }: { userRole: string }) {
       <Route path="/" component={() => <Dashboard userRole={userRole} />} />
       <Route path="/cases" component={CaseManagement} />
       <Route path="/cases/:id" component={CaseDetails} />
+      <Route path="/report" component={AdverseEventReport} />
       <Route path="/critical-cases" component={CriticalCases} />
       <Route path="/users" component={UserManagement} />
       <Route path="/ai-models" component={AIModelManagement} />

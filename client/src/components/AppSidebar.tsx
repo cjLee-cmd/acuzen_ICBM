@@ -32,6 +32,12 @@ const menuItems = [
     roles: ["USER", "REVIEWER", "ADMIN"]
   },
   {
+    title: "데이터 입력",
+    url: "/report",
+    icon: Database,
+    roles: ["USER", "REVIEWER", "ADMIN"]
+  },
+  {
     title: "사례 관리",
     url: "/cases",
     icon: FileText,
