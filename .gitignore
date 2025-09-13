@@ -8,3 +8,9 @@ vite.config.ts.*
 # Session cookie files (security)
 *cookies.txt
 *.cookies
+
+# Playwright artifacts / Pages outputs
+test-results/
+playwright-report/
+*.png
+dist/public
