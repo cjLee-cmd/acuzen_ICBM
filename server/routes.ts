@@ -55,10 +55,28 @@ const requireRole = (roles: string[]) => {
   };
 };
 
-// Audit logging middleware - TEMPORARILY DISABLED FOR DEBUGGING
+// Audit logging middleware
 const auditLog = (action: string, resource: string) => {
   return async (req: Request, res: Response, next: any) => {
-    // Completely disabled for debugging
+    try {
+      await storage.createAuditLog({
+        userId: req.user?.id || 'anonymous',
+        action,
+        resource,
+        details: JSON.stringify({ 
+          method: req.method, 
+          path: req.path,
+          params: req.params,
+          query: req.query
+        }),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        severity: "INFO"
+      });
+    } catch (error) {
+      console.error('Audit log error:', error);
+      // Continue processing even if audit fails
+    }
     next();
   };
 };
@@ -290,13 +308,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user!.id,
         action: "READ_CASES_LIST",
         resource: "cases",
-        details: { 
+        details: JSON.stringify({ 
           method: req.method, 
           path: req.path,
           resultCount: cases.length,
           archivedCount: cases.filter(c => c.isDeleted).length,
           filters: { status, reporterId: !!reporterId, limit, includeDeleted: canIncludeDeleted }
-        },
+        }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         severity: canIncludeDeleted ? "HIGH" : "INFO"
