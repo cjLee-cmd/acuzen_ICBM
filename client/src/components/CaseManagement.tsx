@@ -239,7 +239,7 @@ export function CaseManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>환자 정보</Label>
-                  <p className="text-sm mt-1">{selectedCase.patientAge}세 {selectedCase.gender}</p>
+                  <p className="text-sm mt-1">{selectedCase.patientAge}세 {selectedCase.patientGender}</p>
                 </div>
                 <div>
                   <Label>중증도</Label>
@@ -250,11 +250,11 @@ export function CaseManagement() {
               </div>
               <div>
                 <Label>약물</Label>
-                <p className="text-sm mt-1">{selectedCase.drug}</p>
+                <p className="text-sm mt-1">{selectedCase.drugName}</p>
               </div>
               <div>
                 <Label>부작용 반응</Label>
-                <p className="text-sm mt-1">{selectedCase.reaction}</p>
+                <p className="text-sm mt-1">{selectedCase.adverseReaction}</p>
               </div>
             </div>
           )}

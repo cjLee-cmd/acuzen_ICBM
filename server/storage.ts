@@ -107,7 +107,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return (result.changes ?? 0) > 0;
   }
 
   async listUsers(filters?: { role?: string; isActive?: boolean }): Promise<User[]> {
@@ -188,7 +188,7 @@ export class DatabaseStorage implements IStorage {
     // Legacy hard delete method - kept for compatibility but deprecated
     // Use softDeleteCase for pharmacovigilance compliance
     const result = await db.delete(cases).where(eq(cases.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return (result.changes ?? 0) > 0;
   }
 
   async softDeleteCase(id: string, deletedBy: string, reason: string): Promise<Case | undefined> {
