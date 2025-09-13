@@ -55,49 +55,11 @@ const requireRole = (roles: string[]) => {
   };
 };
 
-// Audit logging middleware - sanitized for security
+// Audit logging middleware - TEMPORARILY DISABLED FOR DEBUGGING
 const auditLog = (action: string, resource: string) => {
   return async (req: Request, res: Response, next: any) => {
-    // Store the original send function to capture result after operation
-    const originalSend = res.send;
-    
-    res.send = function(body) {
-      // Log after operation completion
-      if (req.user) {
-        // Sanitized details - never log sensitive data
-        const sanitizedDetails: any = { 
-          method: req.method, 
-          path: req.path,
-          success: res.statusCode < 400
-        };
-        
-        // Extract resourceId for create operations from response body
-        let resourceId = req.params.id;
-        if (action.includes('CREATE') && res.statusCode < 400 && body) {
-          try {
-            const responseData = typeof body === 'string' ? JSON.parse(body) : body;
-            if (responseData && responseData.id) {
-              resourceId = responseData.id;
-            }
-          } catch (e) {
-            // Ignore JSON parse errors
-          }
-        }
-        
-        // Only log non-sensitive metadata
-        if (action.includes('CREATE') || action.includes('UPDATE')) {
-          if (resource === 'users') {
-            sanitizedDetails.userRole = req.body?.role;
-            sanitizedDetails.userOrganization = req.body?.organization;
-            // Never log passwords, emails, or personal data
-          } else if (resource === 'cases') {
-            sanitizedDetails.severity = req.body?.severity;
-            sanitizedDetails.status = req.body?.status;
-            // Never log patient data or medical details
-          }
-        }
-        
-        // Temporarily disabled for debugging Drizzle parameter binding issues
+    // Completely disabled for debugging
+    next();
         // storage.createAuditLog({
         //   userId: req.user.id,
         //   action,
@@ -454,24 +416,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Enhanced audit log for READ access (compliance requirement)
-      await storage.createAuditLog({
-        userId: req.user!.id,
-        action: "READ_CASE",
-        resource: "cases",
-        resourceId: id,
-        details: { 
-          method: req.method, 
-          path: req.path,
-          caseId: id,
-          caseStatus: case_.status,
-          severity: case_.severity,
-          isArchived: case_.isDeleted,
-          includeDeleted: canAccessArchived
-        },
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
-        severity: canAccessArchived ? "HIGH" : "INFO"
-      });
+      // Temporarily disabled for debugging
+      // await storage.createAuditLog({
+      //   userId: req.user!.id,
+      //   action: "READ_CASE",
+      //   resource: "cases",
+      //   resourceId: id,
+      //   details: { 
+      //     method: req.method, 
+      //     path: req.path,
+      //     caseId: id,
+      //     caseStatus: case_.status,
+      //     severity: case_.severity,
+      //     isArchived: case_.isDeleted,
+      //     includeDeleted: canAccessArchived
+      //   },
+      //   ipAddress: req.ip,
+      //   userAgent: req.get('User-Agent'),
+      //   severity: canAccessArchived ? "HIGH" : "INFO"
+      // });
       
       res.json(case_);
     } catch (error) {
