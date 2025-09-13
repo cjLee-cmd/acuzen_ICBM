@@ -17,19 +17,22 @@ import {
   FileText,
   Brain
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 interface Case {
   id: string;
+  caseNumber: string;
   patientAge: number;
-  gender: string;
-  drug: string;
-  reaction: string;
+  patientGender: string;
+  drugName: string;
+  adverseReaction: string;
   severity: string;
   status: string;
-  reporter: string;
+  reporterId: string;
   dateReported: string;
-  aiConfidence?: number;
-  aiRecommendation?: string;
+  reactionDescription?: string;
+  outcome?: string;
 }
 
 export function CaseManagement() {
@@ -37,41 +40,18 @@ export function CaseManagement() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
-  // Mock data - todo: remove mock functionality
-  const cases: Case[] = [
-    {
-      id: "CSE-2024-001",
-      patientAge: 45,
-      gender: "Female",
-      drug: "Aspirin 100mg",
-      reaction: "Gastrointestinal bleeding",
-      severity: "High",
-      status: "검토 필요",
-      reporter: "Dr. Kim",
-      dateReported: "2024-01-15",
-      aiConfidence: 92,
-      aiRecommendation: "Immediate review recommended due to severity"
-    },
-    {
-      id: "CSE-2024-002",
-      patientAge: 32,
-      gender: "Male",
-      drug: "Ibuprofen 400mg",
-      reaction: "Skin rash",
-      severity: "Medium",
-      status: "처리중",
-      reporter: "Dr. Lee",
-      dateReported: "2024-01-14",
-      aiConfidence: 87,
-      aiRecommendation: "Standard monitoring required"
-    }
-  ];
+  // Fetch cases from API
+  const { data: cases = [], isLoading } = useQuery<Case[]>({
+    queryKey: ["/api", "cases"],
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
   const filteredCases = cases.filter(case_ => {
-    const matchesSearch = case_.drug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         case_.reaction.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         case_.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = case_.drugName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         case_.adverseReaction.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         case_.caseNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === "all" || case_.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -97,8 +77,7 @@ export function CaseManagement() {
   };
 
   const handleViewCase = (case_: Case) => {
-    setSelectedCase(case_);
-    console.log('View case details:', case_.id);
+    setLocation(`/cases/${case_.id}`);
   };
 
   const handleCreateCase = () => {
@@ -159,8 +138,30 @@ export function CaseManagement() {
       </Card>
 
       {/* Cases List */}
-      <div className="space-y-4">
-        {filteredCases.map((case_) => {
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  <div className="h-4 bg-muted animate-pulse rounded w-1/4" />
+                  <div className="h-3 bg-muted animate-pulse rounded w-3/4" />
+                  <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredCases.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">검색 조건에 맞는 사례가 없습니다.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredCases.map((case_) => {
           const StatusIcon = getStatusIcon(case_.status);
           return (
             <Card key={case_.id} className="hover-elevate" data-testid={`case-card-${case_.id}`}>
@@ -168,7 +169,7 @@ export function CaseManagement() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-3">
-                      <span className="font-medium text-lg">{case_.id}</span>
+                      <span className="font-medium text-lg">{case_.caseNumber}</span>
                       <Badge variant={getSeverityVariant(case_.severity)}>
                         {case_.severity}
                       </Badge>
@@ -181,28 +182,28 @@ export function CaseManagement() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">환자</p>
-                        <p className="font-medium">{case_.patientAge}세 {case_.gender}</p>
+                        <p className="font-medium">{case_.patientAge}세 {case_.patientGender}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">약물</p>
-                        <p className="font-medium">{case_.drug}</p>
+                        <p className="font-medium">{case_.drugName}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">반응</p>
-                        <p className="font-medium">{case_.reaction}</p>
+                        <p className="font-medium">{case_.adverseReaction}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">보고자</p>
-                        <p className="font-medium">{case_.reporter}</p>
+                        <p className="text-muted-foreground">보고일</p>
+                        <p className="font-medium">{new Date(case_.dateReported).toLocaleDateString('ko-KR')}</p>
                       </div>
                     </div>
 
-                    {case_.aiConfidence && (
-                      <div className="flex items-center gap-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                        <Brain className="h-4 w-4 text-blue-600" />
+                    {case_.outcome && (
+                      <div className="flex items-center gap-4 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">AI 분석 결과</p>
-                          <p className="text-xs text-muted-foreground">신뢰도: {case_.aiConfidence}% | {case_.aiRecommendation}</p>
+                          <p className="text-sm font-medium">처리 결과</p>
+                          <p className="text-xs text-muted-foreground">{case_.outcome}</p>
                         </div>
                       </div>
                     )}
@@ -221,8 +222,10 @@ export function CaseManagement() {
               </CardContent>
             </Card>
           );
-        })}
-      </div>
+            })
+          )}
+        </div>
+      )}
 
       {/* Case Detail Dialog */}
       <Dialog open={!!selectedCase} onOpenChange={() => setSelectedCase(null)}>

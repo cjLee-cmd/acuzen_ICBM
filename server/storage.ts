@@ -121,12 +121,22 @@ export class DatabaseStorage implements IStorage {
 
   // Case methods
   async getCase(id: string, includeDeleted: boolean = false): Promise<Case | undefined> {
-    const where = includeDeleted 
-      ? eq(cases.id, id)
-      : and(eq(cases.id, id), eq(cases.isDeleted, false));
+    console.log(`DEBUG: getCase called with id=${id}, includeDeleted=${includeDeleted}`);
     
-    const [case_] = await db.select().from(cases).where(where);
-    return case_ || undefined;
+    try {
+      const where = includeDeleted 
+        ? eq(cases.id, id)
+        : and(eq(cases.id, id), eq(cases.isDeleted, false));
+      
+      console.log(`DEBUG: Executing query with where condition`);
+      const [case_] = await db.select().from(cases).where(where);
+      console.log(`DEBUG: Query completed, found case: ${case_ ? 'YES' : 'NO'}`);
+      
+      return case_ || undefined;
+    } catch (error) {
+      console.error(`DEBUG: getCase error for id=${id}:`, error);
+      throw error;
+    }
   }
 
   async listCases(filters?: { status?: string; reporterId?: string; limit?: number; includeDeleted?: boolean }): Promise<Case[]> {
