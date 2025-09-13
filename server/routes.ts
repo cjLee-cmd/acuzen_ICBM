@@ -465,6 +465,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ICSR 표준 보고서 제출 (전용 엔드포인트)
   app.post("/api/reports", requireAuth, async (req: Request, res: Response) => {
     try {
+      console.log("=== POST /api/reports DEBUG ===");
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("User:", req.user);
+      
       const reportData = req.body;
       
       // ICSR 데이터를 기존 스키마에 맞게 변환
@@ -536,8 +540,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submittedAt: new Date().toISOString()
       });
     } catch (error) {
-      console.error("ICSR report submission error:", error);
-      res.status(500).json({ error: "보고서 제출 중 오류가 발생했습니다." });
+      console.error("=== ICSR report submission error ===");
+      console.error("Error:", error);
+      console.error("Stack:", error instanceof Error ? error.stack : 'No stack trace');
+      res.status(400).json({ error: "보고서 제출 실패" });
     }
   });
 
