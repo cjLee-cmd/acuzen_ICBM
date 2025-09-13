@@ -18,6 +18,11 @@
 				"$tsc"
 			],
 			"group": "test"
+		},
+		{
+			"label": "playwright: smoke open and screenshot",
+			"type": "shell",
+			"command": "node -e \"(async()=>{const { chromium } = await import('playwright'); const b=await chromium.launch(); const p=await b.newPage(); await p.goto('http://localhost:5010', { waitUntil: 'networkidle' }); await p.screenshot({ path: 'playwright-home.png', fullPage: true }); console.log('screenshot saved'); await b.close(); })().catch(e=>{console.error(e); process.exit(1);})\""
 		}
 	]
 }
