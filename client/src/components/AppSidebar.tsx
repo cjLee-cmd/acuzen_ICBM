@@ -9,7 +9,8 @@ import {
   Users,
   AlertTriangle,
   BarChart3,
-  Heart
+  Heart,
+  PlusCircle
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,12 @@ const menuItems = [
     title: "사례 관리",
     url: "/cases",
     icon: FileText,
+    roles: ["USER", "REVIEWER", "ADMIN"]
+  },
+  {
+    title: "데이터 입력",
+    url: "/data-entry",
+    icon: PlusCircle,
     roles: ["USER", "REVIEWER", "ADMIN"]
   },
   {

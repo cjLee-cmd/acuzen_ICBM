@@ -99,14 +99,14 @@ export class AIAnalysisService {
       caseId,
       modelName: this.modelName,
       modelVersion: this.modelVersion,
-      confidence: analysisResult.confidence.toString(),
-      prediction: {
+      confidence: analysisResult.confidence,
+      prediction: JSON.stringify({
         severity: analysisResult.severity,
         recommendations: analysisResult.recommendations,
         analysisTimestamp: new Date().toISOString()
-      },
+      }),
       recommendation: this.formatRecommendationSummary(analysisResult.recommendations),
-      processingTime: analysisResult.processingTime.toString(),
+      processingTime: analysisResult.processingTime,
       humanReviewed: false
     };
   }

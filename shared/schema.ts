@@ -173,3 +173,18 @@ export type SeverityLevel = (typeof SEVERITY_LEVELS)[number];
 // Log severity levels
 export const LOG_SEVERITY_LEVELS = ["INFO", "WARNING", "HIGH"] as const;
 export type LogSeverityLevel = (typeof LOG_SEVERITY_LEVELS)[number];
+
+// Inferred types from database tables
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type Case = typeof cases.$inferSelect;
+export type InsertCase = typeof cases.$inferInsert;
+export type AiPrediction = typeof aiPredictions.$inferSelect;
+export type InsertAiPrediction = typeof aiPredictions.$inferInsert;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type AiModel = typeof aiModels.$inferSelect;
+export type InsertAiModel = typeof aiModels.$inferInsert;
+
+// Soft delete case type
+export type SoftDeleteCase = z.infer<typeof softDeleteCaseSchema>;
