@@ -97,15 +97,16 @@ const auditLog = (action: string, resource: string) => {
           }
         }
         
-        storage.createAuditLog({
-          userId: req.user.id,
-          action,
-          resource,
-          resourceId,
-          details: sanitizedDetails,
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent')
-        }).catch(err => console.error('Audit log error:', err));
+        // Temporarily disabled for debugging Drizzle parameter binding issues
+        // storage.createAuditLog({
+        //   userId: req.user.id,
+        //   action,
+        //   resource,
+        //   resourceId,
+        //   details: sanitizedDetails,
+        //   ipAddress: req.ip,
+        //   userAgent: req.get('User-Agent')
+        // }).catch(err => console.error('Audit log error:', err));
       }
       
       return originalSend.call(this, body);
@@ -362,6 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Critical cases endpoint - Must come before /:id route
   app.get("/api/cases/critical", requireAuth, async (req: Request, res: Response) => {
     try {
+      console.log('=== CRITICAL CASES ENDPOINT DEBUG ===');
       console.log('Starting critical cases fetch...');
       
       console.log('Fetching cases...');
@@ -375,8 +377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter for critical cases based on severity and recent timeframe
       const criticalCases = cases.filter(case_ => {
         const isHighSeverity = ['High', 'Critical'].includes(case_.severity);
-        const isActiveCritical = ['검토 필요', '처리중'].includes(case_.status);
+        const isActiveCritical = ['긴급', '검토 필요', '처리중'].includes(case_.status); // Include '긴급' status
         const daysSinceReport = Math.floor((new Date().getTime() - new Date(case_.dateReported).getTime()) / (1000 * 60 * 60 * 24));
+        
+        console.log(`Case ${case_.drugName}: severity=${case_.severity}, status=${case_.status}, days=${daysSinceReport}, isHighSeverity=${isHighSeverity}, isActiveCritical=${isActiveCritical}`);
         
         return isHighSeverity && isActiveCritical && daysSinceReport <= 30; // Last 30 days
       });
